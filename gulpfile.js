@@ -51,7 +51,7 @@ gulp.task('js', function() {
 gulp.task('es6', () => {
 	return browserify('src/js/app.js')
 		.transform('babelify', {
-			presets: ['es2015']
+			presets: ['es2015','react']
 		})
 		.bundle().on('error', function(err){
       // print the error (can replace with gulp-util)

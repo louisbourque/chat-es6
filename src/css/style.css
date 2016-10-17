@@ -1,0 +1,35 @@
+#chatApp{
+  bottom: 0;
+  position: fixed;
+  right: 3rem;
+  z-index: 300;
+}
+
+#chatWindow{
+  transform: translateY(0%);
+	opacity: 1;
+	transition: transform 500ms linear, opacity .5s ease-out;
+}
+#chatWindow.hide,#chatLauncher.hide{
+	transform: translateY(200%);
+	opacity: 1;
+  transition: opacity .5s ease-out, transform 500ms linear;
+}
+
+
+#chatLauncher{
+  bottom: 1rem;
+  right: 1rem;
+  background: #427fe1;
+  color: #fff;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: .2rem solid #fff;
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.2);
+  position: absolute;
+  text-align: center;
+  transform: translateY(0%);
+  opacity: 1;
+  transition: transform 500ms linear, opacity .5s ease-out;
+}
