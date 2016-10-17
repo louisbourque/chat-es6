@@ -6,17 +6,16 @@
 }
 
 #chatWindow{
+  min-height: 20rem;
+  width:18rem;
   transform: translateY(0%);
 	opacity: 1;
-	transition: transform 500ms linear, opacity .5s ease-out;
+	transition: opacity 0.4s ease-out 0.3s, transform 0.5s linear;
+  border: .1em solid #000;
+  border-bottom: none;
+  border-radius: 2% 2% 0 0;
+  background: #fff;
 }
-#chatWindow.hide,#chatLauncher.hide{
-	transform: translateY(200%);
-	opacity: 1;
-  transition: opacity .5s ease-out, transform 500ms linear;
-}
-
-
 #chatLauncher{
   bottom: 1rem;
   right: 1rem;
@@ -31,5 +30,45 @@
   text-align: center;
   transform: translateY(0%);
   opacity: 1;
-  transition: transform 500ms linear, opacity .5s ease-out;
+  transition: opacity 0.4s ease-out 0.3s, transform 0.5s linear;
+}
+#chatWindow.hide,#chatLauncher.hide{
+	transform: translateY(200%);
+	opacity: 0;
+  transition: opacity .2s ease-out, transform 1s linear;
+}
+.chatHeader{
+  color:#fff;
+  background-color: #555;
+  font-weight: bold;
+  text-align: center;
+  height: 28px;
+}
+.chatHeader .title{
+  float:left;
+  width: 100%;
+}
+.chatHeader .closeButton{
+  position: absolute;
+  top:2px;
+  right:4px;
+  width:1.5em;
+  background  : none;
+  border: none;
+}
+
+.chatFooter{
+  height: 42px;
+  width: 100%;
+  position: fixed;
+  bottom: 4px;
+  text-align: center;
+}
+
+.chatFooter textarea{
+  width: 95%;
+  font-family: 'tahoma';
+  font-size: 13px;
+  padding: 5px;
+  resize: none;
 }

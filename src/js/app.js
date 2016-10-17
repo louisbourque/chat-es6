@@ -24,20 +24,42 @@ class ChatMessage extends React.Component {
   }
 }
 
-class ChatWindow extends React.Component {
-  render() {
-    var messageNodes = this.props.messagesList.map(function(result) {
+const ChatWindow =  React.createClass({
+  handleUserMessage: function(event) {
+    // When shift and enter key is presseds
+    if (event.shiftKey && event.keyCode === 13) {
+      var msg = this.refs.textArea.value.trim();
+      if (msg !== '') {
+        // call the sendmessages of ChatContainer throught the props
+        sendMessage(msg);
+      }
+      // Prevent default and clear the textarea
+      event.preventDefault();
+      this.refs.textArea.value = null;
+    }
+  },
+  render: function() {
+    const messageNodes = this.props.messagesList.map(function(result) {
       return (
         <ChatMessage key={result.t} msg={result} />
       );
     });
     return (
       <div className="chatWindowInner">
-        {messageNodes}
+        <div className="chatHeader">
+          <div className="title">Chat</div>
+          <button className="closeButton" onClick={hideChat}>X</button>
+        </div>
+        <div className="messages">
+          {messageNodes}
+        </div>
+        <div className="chatFooter">
+          <textarea id="chatMsg" ref="textArea" onKeyDown={this.handleUserMessage} placeholder="Type your message. Press shift + Enter to send" />
+        </div>
       </div>
     );
   }
-}
+});
 
 const renderChatUI = () => {
   ReactDOM.render(
@@ -46,9 +68,9 @@ const renderChatUI = () => {
   );
 }
 
-const setState = (changes) => {
-  Object.assign(app.state, changes);
-  renderChatUI()
+const appendMessage = (changes) => {
+  app.state.messages = app.state.messages.concat(changes);
+  renderChatUI();
 }
 
 const renderChat = () => {
@@ -59,6 +81,9 @@ const renderChat = () => {
 const hideChat = () => {
   addClass(app.ui.chatWindow,'hide');
   removeClass(app.ui.chatLauncher,'hide');
+}
+const sendMessage = (message) => {
+  appendMessage([{'from':'me','m':message,'t':new Date().getTime()}]);
 }
 
 window.showChat = function(){
