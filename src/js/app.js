@@ -1,137 +1,123 @@
 'use strict'
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import Vue from 'vue';
 import io from 'socket.io-client';
-
-var app = app || {};
-
-app.state = {};
-app.ui = {};
-app.ui.chatApp = document.getElementById('chatApp')
-app.ui.chatLauncher = document.getElementById('chatLauncher');
-app.ui.chatWindow = document.getElementById('chatWindow');
-app.state.messages = []
 
 const chatServerURL = 'http://localhost:4000';
 //const chatServerURL = 'https://louisbourque-chat.herokuapp.com/'
 
-class ChatMessage extends React.Component {
-  render() {
-    if(this.props.msg.type=='msg'){
-      return (
-        <div className="chatmessage">
-          <strong>{this.props.msg.from}:</strong> {this.props.msg.msg}
-        </div>
-      );
-    }else{
-      return (
-        <div className="chatmessage">
-          <em>{this.props.msg.name+ " " +this.props.msg.action}</em>
-        </div>
-      );
+Vue.component('chat-message', {
+  template: `<div v-if="message.type=='msg'" class="chatmessage">
+              <strong>{{message.from}}:</strong> {{message.msg}}
+            </div>
+            <div v-else class="chatmessage">
+              <em>{{message.name+ " " +message.action}}</em>
+            </div>`,
+  props: ['message'],
+
+});
+
+Vue.component('chat-window-inner', {
+  template: `<div v-if="!connected" class="chatWindowInner">
+              <div class="chatHeader">
+                <div class="title">Join Chat</div>
+                <button class="closeButton" v-on:click="handleHideChat">X</button>
+              </div>
+              <div class="joinChat">
+                <input type="text" id="name" ref="joinName" autofocus v-on:keyup="handleJoinName" placeholder="Type your name" />
+                <button class="joinButton" ref="joinButton" v-on:click="handleJoinButton" disabled>Join</button>
+              </div>
+            </div>
+            <div v-else class="chatWindowInner">
+              <div class="chatHeader">
+                <div class="title">Chat</div>
+                <button class="closeButton" v-on:click=handleHideChat>X</button>
+              </div>
+              <div class="messages">
+                <template v-for="message in messages">
+                  <chat-message v-bind:message="message"></chat-message>
+                </template>
+              </div>
+              <div class="chatFooter">
+                <textarea id="chatMsg" ref="textArea" autofocus v-on:keydown="handleUserMessage" placeholder="Type your message. Press shift + Enter to send" />
+              </div>
+            </div>`,
+  props: ['connected','messages'],
+  methods: {
+    handleUserMessage: function(event) {
+      // When shift and enter key is presseds
+      if (event.shiftKey && event.keyCode === 13) {
+        var msg = this.$refs.textArea.value.trim();
+        if (msg !== '') {
+          // call the sendmessages of ChatContainer throught the props
+          sendMessage(msg);
+        }
+        // Prevent default and clear the textarea
+        event.preventDefault();
+        this.$refs.textArea.value = null;
+      }
+    },
+    handleJoinName: function(event) {
+      var name = this.$refs.joinName.value.trim();
+      if(name.length > 0){
+        this.$refs.joinButton.disabled = false;
+        if (event.keyCode === 13) {
+          this.handleJoinButton();
+        }
+      }else{
+        this.$refs.joinButton.disabled = true;
+      }
+    },
+    handleJoinButton: function() {
+      var name = this.$refs.joinName.value.trim();
+      if (name !== '') {
+        joinChat(name);
+      }
+      this.$refs.joinName.value = null;
+    },
+    handleHideChat: function() {
+      hideChat();
     }
   }
-}
+})
 
-const ChatWindow =  React.createClass({
-  handleUserMessage: function(event) {
-    // When shift and enter key is presseds
-    if (event.shiftKey && event.keyCode === 13) {
-      var msg = this.refs.textArea.value.trim();
-      if (msg !== '') {
-        // call the sendmessages of ChatContainer throught the props
-        sendMessage(msg);
-      }
-      // Prevent default and clear the textarea
-      event.preventDefault();
-      this.refs.textArea.value = null;
-    }
-  },
-  handleJoinName: function(event) {
-    var name = this.refs.joinName.value.trim();
-    if(name.length > 0){
-      this.refs.joinButton.disabled = false;
-      if (event.keyCode === 13) {
-        this.handleJoinButton();
-      }
-    }else{
-      this.refs.joinButton.disabled = true;
-    }
-  },
-  handleJoinButton: function() {
-    var name = this.refs.joinName.value.trim();
-    if (name !== '') {
-      joinChat(name);
-    }
-    this.refs.joinName.value = null;
-  },
-  render: function() {
-    const messageNodes = this.props.messagesList.map(function(result) {
-      return (
-        <ChatMessage key={result.time} msg={result} />
-      );
-    });
-    if(typeof(app.socket)=='undefined'){
-      return (
-        <div className="chatWindowInner">
-          <div className="chatHeader">
-            <div className="title">Join Chat</div>
-            <button className="closeButton" onClick={hideChat}>X</button>
-          </div>
-          <div className="joinChat">
-            <input type="text" id="name" ref="joinName" onKeyUp={this.handleJoinName} placeholder="Type your name" />
-            <button className="joinButton" ref="joinButton" onClick={this.handleJoinButton}>Join</button>
-          </div>
-        </div>
-      );
-    }else{
-      return (
-        <div className="chatWindowInner">
-          <div className="chatHeader">
-            <div className="title">Chat</div>
-            <button className="closeButton" onClick={hideChat}>X</button>
-          </div>
-          <div className="messages">
-            {messageNodes}
-          </div>
-          <div className="chatFooter">
-            <textarea id="chatMsg" ref="textArea" onKeyDown={this.handleUserMessage} placeholder="Type your message. Press shift + Enter to send" />
-          </div>
-        </div>
-      );
-    }
+const sharedState = {}
+
+var app = new Vue({
+  el: '#chatWindow',
+  data:  {
+      state: sharedState,
+      ui: {},
+      connected:false,
+      username: 'Unknown',
+      messages: []
   }
 });
 
-const renderChatUI = () => {
-  ReactDOM.render(
-    <ChatWindow messagesList={app.state.messages} />,
-    app.ui.chatWindow
-  );
-}
+app.ui.chatApp = document.getElementById('chatApp');
+app.ui.chatLauncher = document.getElementById('chatLauncher');
+app.ui.chatWindow = document.getElementById('chatWindow');
+
 
 const appendMessage = (changes) => {
-  app.state.messages = app.state.messages.concat(changes);
-  renderChatUI();
+  app.messages = app.messages.concat(changes);
 }
 
 const joinChat = (name) => {
-  app.name = name;
+  app.username = name;
   app.socket = io(chatServerURL);
-  app.socket.emit('join', {'name':app.name});
+  app.socket.emit('join', {'name':app.username});
   app.socket.on('chat message', function(data){
     appendMessage([data]);
   });
   app.socket.on('log', function(data){
     appendMessage([data]);
   });
-  renderChatUI();
+  app.connected = true;
 }
 
 const showChat = () => {
   addClass(app.ui.chatLauncher,'hide');
-  renderChatUI();
   removeClass(app.ui.chatWindow,'hide');
 }
 const hideChat = () => {

@@ -13,6 +13,14 @@ const babelify = require('babelify');
 const browserify = require('browserify')
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
+var aliasify = require('aliasify');
+
+var aliasifyConfig = {
+    aliases: {
+        "vue": "vue/dist/vue"
+    },
+    verbose: false
+}
 
 gulp.task('default', ['es6','css','html','watch']);
 
@@ -51,8 +59,9 @@ gulp.task('js', function() {
 gulp.task('es6', () => {
 	return browserify('src/js/app.js')
 		.transform('babelify', {
-			presets: ['es2015','react']
+			presets: ['es2015']
 		})
+    .transform(aliasify, aliasifyConfig)
 		.bundle().on('error', function(err){
       // print the error (can replace with gulp-util)
       console.log(err.message);
@@ -62,7 +71,7 @@ gulp.task('es6', () => {
 		.pipe(source('bundle.min.js'))
 		.pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-    .pipe(uglify())
+    //.pipe(uglify())
     .pipe(sourcemaps.write('./')) // writes .map file
 		.pipe(gulp.dest('js'));
 });
