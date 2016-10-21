@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import io from 'socket.io-client';
 
 var app = app || {};
 
@@ -10,17 +11,26 @@ app.ui = {};
 app.ui.chatApp = document.getElementById('chatApp')
 app.ui.chatLauncher = document.getElementById('chatLauncher');
 app.ui.chatWindow = document.getElementById('chatWindow');
+app.state.messages = []
 
-// new Date().getTime()
-app.state.messages = [{'from':'TestArr','m':'Test Messsage','t':1476669057568},{'from':'Test','m':'Test Messsage 2','t':1476669070617}]
+const chatServerURL = 'http://localhost:4000';
+//const chatServerURL = 'https://louisbourque-chat.herokuapp.com/'
 
 class ChatMessage extends React.Component {
   render() {
-    return (
-      <div className="chatmessage">
-        {this.props.msg.from} said: {this.props.msg.m}
-      </div>
-    );
+    if(this.props.msg.type=='msg'){
+      return (
+        <div className="chatmessage">
+          <strong>{this.props.msg.from}:</strong> {this.props.msg.msg}
+        </div>
+      );
+    }else{
+      return (
+        <div className="chatmessage">
+          <em>{this.props.msg.name+ " " +this.props.msg.action}</em>
+        </div>
+      );
+    }
   }
 }
 
@@ -38,26 +48,59 @@ const ChatWindow =  React.createClass({
       this.refs.textArea.value = null;
     }
   },
+  handleJoinName: function(event) {
+    var name = this.refs.joinName.value.trim();
+    if(name.length > 0){
+      this.refs.joinButton.disabled = false;
+      if (event.keyCode === 13) {
+        this.handleJoinButton();
+      }
+    }else{
+      this.refs.joinButton.disabled = true;
+    }
+  },
+  handleJoinButton: function() {
+    var name = this.refs.joinName.value.trim();
+    if (name !== '') {
+      joinChat(name);
+    }
+    this.refs.joinName.value = null;
+  },
   render: function() {
     const messageNodes = this.props.messagesList.map(function(result) {
       return (
-        <ChatMessage key={result.t} msg={result} />
+        <ChatMessage key={result.time} msg={result} />
       );
     });
-    return (
-      <div className="chatWindowInner">
-        <div className="chatHeader">
-          <div className="title">Chat</div>
-          <button className="closeButton" onClick={hideChat}>X</button>
+    if(typeof(app.socket)=='undefined'){
+      return (
+        <div className="chatWindowInner">
+          <div className="chatHeader">
+            <div className="title">Join Chat</div>
+            <button className="closeButton" onClick={hideChat}>X</button>
+          </div>
+          <div className="joinChat">
+            <input type="text" id="name" ref="joinName" onKeyUp={this.handleJoinName} placeholder="Type your name" />
+            <button className="joinButton" ref="joinButton" onClick={this.handleJoinButton}>Join</button>
+          </div>
         </div>
-        <div className="messages">
-          {messageNodes}
+      );
+    }else{
+      return (
+        <div className="chatWindowInner">
+          <div className="chatHeader">
+            <div className="title">Chat</div>
+            <button className="closeButton" onClick={hideChat}>X</button>
+          </div>
+          <div className="messages">
+            {messageNodes}
+          </div>
+          <div className="chatFooter">
+            <textarea id="chatMsg" ref="textArea" onKeyDown={this.handleUserMessage} placeholder="Type your message. Press shift + Enter to send" />
+          </div>
         </div>
-        <div className="chatFooter">
-          <textarea id="chatMsg" ref="textArea" onKeyDown={this.handleUserMessage} placeholder="Type your message. Press shift + Enter to send" />
-        </div>
-      </div>
-    );
+      );
+    }
   }
 });
 
@@ -73,7 +116,20 @@ const appendMessage = (changes) => {
   renderChatUI();
 }
 
-const renderChat = () => {
+const joinChat = (name) => {
+  app.name = name;
+  app.socket = io(chatServerURL);
+  app.socket.emit('join', {'name':app.name});
+  app.socket.on('chat message', function(data){
+    appendMessage([data]);
+  });
+  app.socket.on('log', function(data){
+    appendMessage([data]);
+  });
+  renderChatUI();
+}
+
+const showChat = () => {
   addClass(app.ui.chatLauncher,'hide');
   renderChatUI();
   removeClass(app.ui.chatWindow,'hide');
@@ -83,11 +139,11 @@ const hideChat = () => {
   removeClass(app.ui.chatLauncher,'hide');
 }
 const sendMessage = (message) => {
-  appendMessage([{'from':'me','m':message,'t':new Date().getTime()}]);
+  app.socket.emit('chat message', {'msg':message});
 }
 
 window.showChat = function(){
-  renderChat();
+  showChat();
 }
 window.hideChat = function(){
   hideChat();
@@ -112,4 +168,4 @@ function hasClass(el, className) {
 	    else el.className = el.className.replace(new RegExp('\\b'+ className+'\\b', 'g'), '');
 	}
 
-//window.launchChat();
+//window.showChat();
