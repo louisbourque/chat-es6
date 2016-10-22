@@ -37,25 +37,33 @@ Vue.component('chat-window-inner', {
                 <template v-for="message in messages">
                   <chat-message v-bind:message="message"></chat-message>
                 </template>
+                <template v-for="message in messagessofar">
+                  <chat-message v-bind:message="message"></chat-message>
+                </template>
               </div>
               <div class="chatFooter">
-                <textarea id="chatMsg" ref="textArea" autofocus v-on:keydown="handleUserMessage" placeholder="Type your message. Press shift + Enter to send" />
+                <textarea id="chatMsg" ref="textArea" autofocus v-on:keyup="handleUserMessage" placeholder="Type your message. Press shift + Enter to send" />
               </div>
             </div>`,
-  props: ['connected','messages'],
+  props: ['connected','messages','messagessofar'],
   methods: {
     handleUserMessage: function(event) {
-      // When shift and enter key is presseds
+      // When shift and enter key is pressed
       if (event.shiftKey && event.keyCode === 13) {
+        // call the sendmessages of ChatContainer throught the props
+        sendMessageEnd();
+
+        // Prevent default and clear the textarea
+        event.preventDefault();
+        this.$refs.textArea.value = null;
+      }else{
         var msg = this.$refs.textArea.value.trim();
         if (msg !== '') {
           // call the sendmessages of ChatContainer throught the props
           sendMessage(msg);
         }
-        // Prevent default and clear the textarea
-        event.preventDefault();
-        this.$refs.textArea.value = null;
       }
+
     },
     handleJoinName: function(event) {
       var name = this.$refs.joinName.value.trim();
@@ -90,7 +98,8 @@ var app = new Vue({
       ui: {},
       connected:false,
       username: 'Unknown',
-      messages: []
+      messages: [],
+      messagessofar: {}
   }
 });
 
@@ -102,15 +111,24 @@ app.ui.chatWindow = document.getElementById('chatWindow');
 const appendMessage = (changes) => {
   app.messages = app.messages.concat(changes);
 }
-
+const appendMessageSoFar = (changes) => {
+  app.messagessofar = Object.assign({},app.messagessofar, changes);
+}
 const joinChat = (name) => {
   app.username = name;
   app.socket = io(chatServerURL);
   app.socket.emit('join', {'name':app.username});
+  app.socket.on('chat message end', function(data){
+    appendMessage([data]);
+    delete app.messagessofar[data.id];
+  });
   app.socket.on('chat message', function(data){
+    appendMessageSoFar({[data.id]:data});
+  });
+  app.socket.on('join', function(data){
     appendMessage([data]);
   });
-  app.socket.on('log', function(data){
+  app.socket.on('leave', function(data){
     appendMessage([data]);
   });
   app.connected = true;
@@ -127,7 +145,9 @@ const hideChat = () => {
 const sendMessage = (message) => {
   app.socket.emit('chat message', {'msg':message});
 }
-
+const sendMessageEnd = () => {
+  app.socket.emit('chat message end');
+}
 window.showChat = function(){
   showChat();
 }

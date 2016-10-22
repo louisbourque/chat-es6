@@ -6,7 +6,7 @@
 }
 
 #chatWindow{
-  min-height: 20rem;
+  min-height: 320px;
   width:18rem;
   transform: translateY(0%);
 	opacity: 1;
@@ -74,4 +74,9 @@
 }
 .joinChat{
   padding:10px 5px;
+}
+.messages{
+  overflow-y:auto;
+  height: 244px;
+
 }
