@@ -82,3 +82,6 @@
 .message-so-far{
   color:#666;
 }
+.chatmessage{
+  white-space: pre-wrap;
+}
