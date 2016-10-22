@@ -33,7 +33,7 @@ Vue.component('chat-window-inner', {
                 <div class="title">Chat</div>
                 <button class="closeButton" v-on:click=handleHideChat>X</button>
               </div>
-              <div class="messages">
+              <div class="messages" v-scrollDown>
                 <template v-for="message in messages">
                   <chat-message v-bind:message="message"></chat-message>
                 </template>
@@ -100,6 +100,15 @@ var app = new Vue({
       username: 'Unknown',
       messages: [],
       messagessofar: {}
+  }
+});
+
+// Register a global custom directive called v-scrollDown
+Vue.directive('scrollDown', {
+  // When the bound element and all children are finished updating...
+  componentUpdated: function (el) {
+    // Scroll down
+    el.scrollTop = el.scrollHeight;
   }
 });
 
