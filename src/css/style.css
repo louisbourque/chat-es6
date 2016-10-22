@@ -78,5 +78,7 @@
 .messages{
   overflow-y:auto;
   height: 244px;
-
+}
+.message-so-far{
+  color:#666;
 }

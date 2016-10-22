@@ -7,7 +7,7 @@ const chatServerURL = 'http://localhost:4000';
 //const chatServerURL = 'https://louisbourque-chat.herokuapp.com/'
 
 Vue.component('chat-message', {
-  template: `<div v-if="message.type=='msg'" class="chatmessage">
+  template: `<div v-if="message.type=='msg'" class="chatmessage" :class="{'message-so-far':!message.complete}">
               <strong>{{message.from}}:</strong> {{message.msg}}
             </div>
             <div v-else class="chatmessage">
