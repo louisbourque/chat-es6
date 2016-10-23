@@ -57,7 +57,7 @@ Vue.component('chat-window-inner', {
         }
         // Prevent default and clear the textarea
         event.preventDefault();
-        this.$refs.textArea.value = null;
+        this.$refs.textArea.value = '';
         this.$refs.sendButton.disabled = true;
       }else{
         sendMessage(msg);
@@ -81,7 +81,7 @@ Vue.component('chat-window-inner', {
       if (name !== '') {
         joinChat(name);
       }
-      this.$refs.joinName.value = null;
+      this.$refs.joinName.value = '';
     },
     handleHideChat: function() {
       hideChat();
