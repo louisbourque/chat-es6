@@ -43,23 +43,25 @@ Vue.component('chat-window-inner', {
               </div>
               <div class="chatFooter">
                 <textarea id="chatMsg" ref="textArea" autofocus v-on:keyup="handleUserMessage" placeholder="Type your message. Press shift + Enter to send" />
+                <button class="sendButton" ref="sendButton" v-on:click="handleUserMessage" disabled>Send</button>
               </div>
             </div>`,
   props: ['connected','messages','messagessofar'],
   methods: {
     handleUserMessage: function(event) {
+      var msg = this.$refs.textArea.value.trim();
       // When shift and enter key is pressed
-      if (event.shiftKey && event.keyCode === 13) {
+      if (event.type == 'click' || (event.shiftKey && event.keyCode === 13)) {
         if (msg !== '') {
           sendMessageEnd();
         }
         // Prevent default and clear the textarea
         event.preventDefault();
         this.$refs.textArea.value = null;
+        this.$refs.sendButton.disabled = true;
       }else{
-        var msg = this.$refs.textArea.value.trim();
         sendMessage(msg);
-
+        this.$refs.sendButton.disabled = (msg == '');
       }
 
     },

@@ -7,7 +7,7 @@
 
 #chatWindow{
   min-height: 320px;
-  width:18rem;
+  width:290px;
   transform: translateY(0%);
 	opacity: 1;
 	transition: opacity 0.4s ease-out 0.3s, transform 0.5s linear;
@@ -66,14 +66,20 @@
 }
 
 .chatFooter textarea{
-  width: 95%;
+  width:210px;
   font-family: 'tahoma';
   font-size: 13px;
   padding: 5px;
   resize: none;
+  height: 32px;
 }
 .joinChat{
   padding:10px 5px;
+}
+.sendButton{
+  width:60px;
+  bottom: 14px;
+  position: relative;
 }
 .messages{
   overflow-y:auto;
