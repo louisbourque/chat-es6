@@ -60,7 +60,7 @@
 .chatFooter{
   height: 42px;
   width: 100%;
-  position: fixed;
+  position: relative;
   bottom: 4px;
   text-align: center;
 }
