@@ -137,6 +137,7 @@ const joinChat = (name) => {
   });
   app.socket.on('leave', function(data){
     appendMessage([data]);
+    delete app.messagessofar[data.id];
   });
   app.connected = true;
 }
