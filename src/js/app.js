@@ -38,7 +38,7 @@ Vue.component('chat-window-inner', {
                   <chat-message v-bind:message="message"></chat-message>
                 </template>
                 <template v-for="message in messagessofar">
-                  <chat-message v-bind:message="message"></chat-message>
+                  <chat-message v-if="message.msg" v-bind:message="message"></chat-message>
                 </template>
               </div>
               <div class="chatFooter">
@@ -50,18 +50,16 @@ Vue.component('chat-window-inner', {
     handleUserMessage: function(event) {
       // When shift and enter key is pressed
       if (event.shiftKey && event.keyCode === 13) {
-        // call the sendmessages of ChatContainer throught the props
-        sendMessageEnd();
-
+        if (msg !== '') {
+          sendMessageEnd();
+        }
         // Prevent default and clear the textarea
         event.preventDefault();
         this.$refs.textArea.value = null;
       }else{
         var msg = this.$refs.textArea.value.trim();
-        if (msg !== '') {
-          // call the sendmessages of ChatContainer throught the props
-          sendMessage(msg);
-        }
+        sendMessage(msg);
+
       }
 
     },
