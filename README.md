@@ -1,1 +1,1 @@
-speed-reader
+Real time chat application built using vue.js
