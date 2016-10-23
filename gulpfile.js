@@ -71,7 +71,7 @@ gulp.task('es6', () => {
 		.pipe(source('bundle.min.js'))
 		.pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-    //.pipe(uglify())
+    .pipe(uglify())
     .pipe(sourcemaps.write('./')) // writes .map file
 		.pipe(gulp.dest('js'));
 });
