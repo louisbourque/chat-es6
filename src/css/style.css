@@ -83,5 +83,5 @@
   color:#666;
 }
 .chatmessage{
-  white-space: pre-wrap;
+  white-space: pre-line;
 }
